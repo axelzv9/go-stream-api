@@ -67,6 +67,22 @@ func (s Stream[T]) Distinct() Stream[T] {
 	return Stream[T]{source: result}
 }
 
+// DistinctBy returns a stream consisting of the distinct elements of this stream,
+// where distinctness is determined by the key extracted by the keyExtractor function.
+// Note: This is a top-level function because Go methods cannot have type parameters.
+func DistinctBy[T any, K comparable](s Stream[T], keyExtractor func(T) K) Stream[T] {
+	seen := make(map[K]struct{})
+	var result []T
+	for _, v := range s.source {
+		key := keyExtractor(v)
+		if _, exists := seen[key]; !exists {
+			seen[key] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return Stream[T]{source: result}
+}
+
 // Collect accumulates the elements of this stream into a slice.
 func (s Stream[T]) Collect() []T {
 	return s.source

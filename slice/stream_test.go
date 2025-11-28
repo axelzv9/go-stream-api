@@ -84,6 +84,49 @@ func TestStream_Distinct(t *testing.T) {
 	}
 }
 
+type Person struct {
+	ID   int
+	Name string
+}
+
+func TestDistinctBy(t *testing.T) {
+	words := From([]string{"cat", "dog", "bird", "ant", "elephant"})
+	uniqueByLen := DistinctBy(words, func(s string) int {
+		return len(s)
+	}).Collect()
+
+	expected := []string{"cat", "bird", "elephant"}
+	if !reflect.DeepEqual(uniqueByLen, expected) {
+		t.Errorf("Expected %v, got %v", expected, uniqueByLen)
+	}
+
+	people := From([]Person{
+		{ID: 1, Name: "Alice"},
+		{ID: 2, Name: "Bob"},
+		{ID: 1, Name: "Alice Duplicate"},
+		{ID: 3, Name: "Charlie"},
+		{ID: 2, Name: "Bob Duplicate"},
+	})
+	uniqueByID := DistinctBy(people, func(p Person) int {
+		return p.ID
+	}).Collect()
+
+	expectedPeople := []Person{
+		{ID: 1, Name: "Alice"},
+		{ID: 2, Name: "Bob"},
+		{ID: 3, Name: "Charlie"},
+	}
+	if !reflect.DeepEqual(uniqueByID, expectedPeople) {
+		t.Errorf("Expected %v, got %v", expectedPeople, uniqueByID)
+	}
+
+	emptyStream := From([]int{})
+	emptyResult := DistinctBy(emptyStream, func(i int) int { return i }).Collect()
+	if len(emptyResult) != 0 {
+		t.Errorf("Expected empty slice, got %v", emptyResult)
+	}
+}
+
 func TestStream_Reduce(t *testing.T) {
 	s := From([]int{1, 2, 3, 4})
 	sum := s.Reduce(0, func(a, b int) int {
