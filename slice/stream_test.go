@@ -61,6 +61,29 @@ func TestStream_Sorted(t *testing.T) {
 	}
 }
 
+func TestStream_Distinct(t *testing.T) {
+	s := From([]int{1, 2, 2, 3, 4, 4, 5, 1})
+	res := s.Distinct().Collect()
+
+	expected := []int{1, 2, 3, 4, 5}
+	if !reflect.DeepEqual(res, expected) {
+		t.Errorf("Expected %v, got %v", expected, res)
+	}
+
+	sEmpty := From([]int{})
+	resEmpty := sEmpty.Distinct().Collect()
+	if len(resEmpty) != 0 {
+		t.Errorf("Expected empty slice, got %v", resEmpty)
+	}
+
+	sNoDuplicates := From([]string{"a", "b", "c"})
+	resNoDuplicates := sNoDuplicates.Distinct().Collect()
+	expectedNoDuplicates := []string{"a", "b", "c"}
+	if !reflect.DeepEqual(resNoDuplicates, expectedNoDuplicates) {
+		t.Errorf("Expected %v, got %v", expectedNoDuplicates, resNoDuplicates)
+	}
+}
+
 func TestStream_Reduce(t *testing.T) {
 	s := From([]int{1, 2, 3, 4})
 	sum := s.Reduce(0, func(a, b int) int {

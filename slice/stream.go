@@ -53,6 +53,20 @@ func (s Stream[T]) Sorted(comparator func(a, b T) int) Stream[T] {
 	return Stream[T]{source: result}
 }
 
+// Distinct returns a stream consisting of the distinct elements (according to equality) of this stream.
+// Note: T must be comparable for this operation.
+func (s Stream[T]) Distinct() Stream[T] {
+	seen := make(map[any]struct{})
+	var result []T
+	for _, v := range s.source {
+		if _, exists := seen[v]; !exists {
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return Stream[T]{source: result}
+}
+
 // Collect accumulates the elements of this stream into a slice.
 func (s Stream[T]) Collect() []T {
 	return s.source
